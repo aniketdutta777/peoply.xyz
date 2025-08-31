@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peoply.ai - AI Recruiter for Startups and Agencies </title>
+  <link href="https://fonts.googleapis.com/css2?family=Italiana:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000000;
+      color: #ffffff;
+    }
+
+    /* Brand name in top left */
+    .brand-name {
+      position: fixed;
+      top: 40px;
+      left: 40px;
+      z-index: 20;
+      font-family: 'Italiana', serif;
+      font-weight: 400;
+      font-size: 24px;
+      color: #cccccc;
+      letter-spacing: 1px;
+    }
+
+    /* Shader container - positioned at 35% from top */
+    .shader-container {
+      position: fixed;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 382px;
+      height: 382px;
+      z-index: 10;
+      /* Ensure perfect circle */
+      aspect-ratio: 1 / 1;
+    }
+
+    canvas#glcanvas {
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 50%;
+      /* Force circular proportions */
+      aspect-ratio: 1 / 1;
+      /* Prevent distortion */
+      object-fit: contain;
+    }
+
+    /* Main message below the shader */
+    .main-message {
+      position: fixed;
+      top: 75%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+      text-align: center;
+      max-width: min(600px, 90vw);
+      padding: 0 clamp(1rem, 4vw, 2rem);
+    }
+
+    .hero-title {
+      font-family: 'Italiana', serif;
+      font-weight: 400;
+      font-size: clamp(20px, 5vw, 28px);
+      line-height: 1.3;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    /* Call-to-action button below the main message */
+    .cta-button {
+      position: fixed;
+      top: 88%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+      padding: clamp(14px, 3vw, 20px) clamp(28px, 6vw, 40px);
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Italiana', serif;
+      font-weight: 700;
+      font-size: clamp(16px, 3.5vw, 20px);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .cta-button:hover {
+      background: #f0f0f0;
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+
+    /* Responsive adjustments - optimized for quality across all devices */
+    @media (max-width: 768px) {
+      .shader-container {
+        top: 35%;
+        width: clamp(280px, 70vw, 350px);
+        height: clamp(280px, 70vw, 350px);
+        /* Ensure perfect circle on tablet */
+        aspect-ratio: 1 / 1;
+      }
+      
+      .brand-name {
+        top: clamp(20px, 4vw, 30px);
+        left: clamp(20px, 4vw, 30px);
+        font-size: clamp(18px, 4.5vw, 20px);
+      }
+      
+      .main-message {
+        top: 70%;
+        max-width: min(500px, 85vw);
+      }
+      
+      .hero-title {
+        font-size: clamp(18px, 4.8vw, 24px);
+      }
+      
+      .cta-button {
+        top: 85%;
+        padding: clamp(14px, 3.5vw, 18px) clamp(24px, 6vw, 32px);
+        font-size: clamp(15px, 3.8vw, 18px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .shader-container {
+        top: 35%;
+        width: clamp(220px, 65vw, 300px);
+        height: clamp(220px, 65vw, 300px);
+        /* Ensure perfect circle on mobile */
+        aspect-ratio: 1 / 1;
+      }
+      
+      .brand-name {
+        top: clamp(15px, 3.5vw, 20px);
+        left: clamp(15px, 3.5vw, 20px);
+        font-size: clamp(16px, 4vw, 18px);
+      }
+      
+      .main-message {
+        top: 65%;
+        max-width: min(400px, 90vw);
+      }
+      
+      .hero-title {
+        font-size: clamp(16px, 4.5vw, 20px);
+        line-height: 1.4;
+      }
+      
+      .cta-button {
+        top: 80%;
+        padding: clamp(12px, 4vw, 16px) clamp(20px, 6vw, 28px);
+        font-size: clamp(14px, 4vw, 16px);
+      }
+    }
+
+    @media (max-width: 360px) {
+      .shader-container {
+        top: 35%;
+        width: clamp(180px, 60vw, 250px);
+        height: clamp(180px, 60vw, 250px);
+        /* Ensure perfect circle on small mobile */
+        aspect-ratio: 1 / 1;
+      }
+      
+      .brand-name {
+        top: clamp(12px, 3vw, 15px);
+        left: clamp(12px, 3vw, 15px);
+        font-size: clamp(14px, 3.5vw, 16px);
+      }
+      
+      .main-message {
+        top: 60%;
+        max-width: min(320px, 95vw);
+      }
+      
+      .hero-title {
+        font-size: clamp(14px, 4vw, 16px);
+        line-height: 1.5;
+      }
+      
+      .cta-button {
+        top: 75%;
+        padding: clamp(10px, 4.5vw, 14px) clamp(16px, 6.5vw, 24px);
+        font-size: clamp(12px, 4.5vw, 14px);
+      }
+    }
+    
+    /* Laptop and desktop optimization - prevent shader cutoff */
+    @media (min-width: 1024px) {
+      .shader-container {
+        top: 35%;
+        width: clamp(320px, 70vw, 400px);
+        height: clamp(320px, 70vw, 400px);
+        /* Ensure perfect circle on desktop */
+        aspect-ratio: 1 / 1;
+      }
+      
+      .main-message {
+        top: 72%;
+      }
+      
+      .cta-button {
+        top: 88%;
+      }
+    }
+    
+    /* Large desktop screens */
+    @media (min-width: 1440px) {
+      .shader-container {
+        top: 35%;
+        width: clamp(350px, 75vw, 450px);
+        height: clamp(350px, 75vw, 450px);
+        /* Ensure perfect circle on large desktop */
+        aspect-ratio: 1 / 1;
+      }
+      
+      .main-message {
+        top: 72%;
+      }
+      
+      .cta-button {
+        top: 88%;
+      }
+    }
+    
+    /* Tablet-specific optimization - prevent crescent */
+    @media (min-width: 481px) and (max-width: 1023px) {
+      .shader-container {
+        /* Force perfect circle on tablets */
+        aspect-ratio: 1 / 1;
+        /* Ensure container is square */
+        width: clamp(280px, 70vw, 400px);
+        height: clamp(280px, 70vw, 400px);
+      }
+      
+      canvas#glcanvas {
+        /* Force canvas to maintain circular proportions */
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 50%;
+        aspect-ratio: 1 / 1;
+      }
+    }
+    
+    /* Landscape orientation optimization */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .shader-container {
+        top: 25%;
+        width: clamp(200px, 40vh, 300px);
+        height: clamp(200px, 40vh, 300px);
+        /* Ensure perfect circle in landscape */
+        aspect-ratio: 1 / 1;
+      }
+      
+      .main-message {
+        top: 55%;
+      }
+      
+      .cta-button {
+        top: 75%;
+      }
+    }
+    
+    /* High DPI displays - ensure crisp rendering */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .shader-container canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Brand name in top left -->
+  <div class="brand-name">PEOPLY</div>
+
+  <!-- Shader container - positioned above the copy -->
+  <div class="shader-container">
+    <canvas id="glcanvas" width="382" height="382"></canvas>
+  </div>
+
+  <!-- Main message below the shader -->
+  <div class="main-message">
+    <h1 class="hero-title">AI recruiter for startups and agencies</h1>
+  </div>
+
+  <!-- Call-to-action button below the main message -->
+  <a href="https://cal.com/aniket-dutta-fkqncs/peoply.ai" target="_blank" class="cta-button">SIGN UP FOR BETA</a>
+
+  <script>
+    // Mouse tracking for shader interaction - ONLY within shader container
+    let mouseX = 0.5;
+    let mouseY = 0.5;
+    let isMouseInShader = false;
+    
+    // Track mouse movement only when over shader container
+    document.addEventListener('mousemove', (e) => {
+      const shaderContainer = document.querySelector('.shader-container');
+      const rect = shaderContainer.getBoundingClientRect();
+      
+      // Check if mouse is within shader container bounds
+      if (e.clientX >= rect.left && e.clientX <= rect.right && 
+          e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        
+        // Convert to shader-relative coordinates (0-1)
+        mouseX = (e.clientX - rect.left) / rect.width;
+        mouseY = 1.0 - (e.clientY - rect.top) / rect.height;
+        isMouseInShader = true;
+        
+        console.log('Mouse IN shader:', mouseX, mouseY);
+      } else {
+        isMouseInShader = false;
+        console.log('Mouse OUTSIDE shader');
+      }
+    });
+    
+    // Track touch movement for mobile
+    document.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const shaderContainer = document.querySelector('.shader-container');
+      const rect = shaderContainer.getBoundingClientRect();
+      
+      if (touch.clientX >= rect.left && touch.clientX <= rect.right && 
+          touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        
+        mouseX = (touch.clientX - rect.left) / rect.width;
+        mouseY = 1.0 - (touch.clientY - rect.top) / rect.height;
+        isMouseInShader = true;
+      } else {
+        isMouseInShader = false;
+      }
+    });
+    
+    // Add click event to test if events are working
+    document.addEventListener('click', (e) => {
+      console.log('Click detected at:', e.clientX, e.clientY);
+    });
+    
+    // Initialize WebGL shader
+    function initShader() {
+      // WebGL setup
+      const canvas = document.querySelector('.shader-container canvas');
+      console.log('Canvas found:', canvas);
+      
+      if (!canvas) {
+        console.error('Canvas not found!');
+        return;
+      }
+      
+      // Set canvas dimensions with responsive scaling
+      function updateCanvasSize() {
+        const container = document.querySelector('.shader-container');
+        const rect = container.getBoundingClientRect();
+        
+        // Ensure perfect circular proportions
+        const size = Math.min(rect.width, rect.height);
+        
+        // Set canvas size to match container exactly
+        canvas.width = size;
+        canvas.height = size;
+        
+        // Force canvas CSS to match dimensions exactly
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+        
+        console.log('Canvas resized to:', canvas.width, 'x', canvas.height, 'Container:', rect.width, 'x', rect.height);
+      }
+      
+      // Initial size
+      updateCanvasSize();
+      
+      const gl = canvas.getContext('webgl');
+      console.log('WebGL context:', gl);
+      
+      if (!gl) {
+        console.error('WebGL not supported!');
+        return;
+      }
+      
+      // Now that gl is available, update the viewport
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      
+      // Handle window resize with debouncing to prevent distortion
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          updateCanvasSize();
+          // Update WebGL viewport after resize
+          if (gl) {
+            gl.viewport(0, 0, canvas.width, canvas.height);
+          }
+        }, 150);
+      });
+      
+      // Handle orientation change
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          updateCanvasSize();
+          if (gl) {
+            gl.viewport(0, 0, canvas.width, canvas.height);
+          }
+        }, 100);
+      });
+      
+      // Vertex shader
+      const vertexShaderSource = `
+        attribute vec2 aVertexPosition;
+        attribute vec2 aTextureCoord;
+        varying vec2 vTextureCoord;
+        void main() {
+          vTextureCoord = aTextureCoord;
+          gl_Position = vec4(aVertexPosition, 0.0, 1.0);
+        }
+      `;
+      
+      // Fragment shader (Flowing Waves - EXACT original code)
+      const fragmentShaderSource = `
+        precision mediump float;
+        uniform vec2 iResolution;
+        uniform float iTime;
+        uniform vec2 iMouse;
+        uniform bool hasActiveReminders;
+        uniform bool hasUpcomingReminders;
+        uniform bool disableCenterDimming;
+        varying vec2 vTextureCoord;
+
+        void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+          vec2 uv = (2.0 * fragCoord - iResolution.xy) / min(iResolution.x, iResolution.y);
+
+          // Calculate distance from center for dimming the center
+          vec2 center = iResolution.xy * 0.5;
+          float dist = distance(fragCoord, center);
+          float radius = min(iResolution.x, iResolution.y) * 0.5;
+          
+          // Create a dimming factor for the center area (30% of the radius)
+          float centerDim = disableCenterDimming ? 1.0 : smoothstep(radius * 0.3, radius * 0.5, dist);
+
+          for(float i = 1.0; i < 10.0; i++){
+            // Add ultra-smooth mouse influence to wave direction - only when mouse is in shader
+            vec2 mouse = iMouse.xy;
+            
+            // Check if mouse is within the circular shader area
+            vec2 shaderCenter = iResolution.xy * 0.5;
+            float mouseDistFromCenter = length(mouse - shaderCenter);
+            float shaderRadius = 191.0;
+            
+            // Only apply mouse influence when mouse is within the shader circle
+            float mouseInfluence = 0.0;
+            if (mouseDistFromCenter < shaderRadius) {
+              // Ultra-smooth transition with better smoothing
+              float rawInfluence = smoothstep(shaderRadius, shaderRadius * 0.3, mouseDistFromCenter);
+              mouseInfluence = smoothstep(0.0, 1.0, rawInfluence);
+            }
+            
+            // Very subtle and ultra-smooth wave direction influence
+            vec2 waveDirection = vec2(0.0);
+            if (mouseInfluence > 0.0) {
+              vec2 mouseUV = (2.0 * (mouse / iResolution.xy) - 1.0) * vec2(iResolution.x / iResolution.y, 1.0);
+              waveDirection = normalize(mouseUV - uv) * mouseInfluence * 0.012; // Gentle but responsive influence
+            }
+            
+            uv.x += 0.6 / i * cos(i * 2.5 * uv.y + iTime) + waveDirection.x;
+            uv.y += 0.6 / i * cos(i * 1.5 * uv.x + iTime) + waveDirection.y;
+          }
+          
+          // DEBUG: Visual indicator of mouse influence area - also smoothed
+          vec2 mouse = iMouse.xy;
+          vec2 shaderCenter = iResolution.xy * 0.5;
+          float mouseDistFromCenter = length(mouse - shaderCenter);
+          float shaderRadius = 191.0;
+          
+          if (mouseDistFromCenter < shaderRadius) {
+            // Show a very subtle, smooth glow when mouse is inside shader
+            float rawGlow = smoothstep(shaderRadius, shaderRadius * 0.2, mouseDistFromCenter);
+            float debugGlow = smoothstep(0.0, 1.0, rawGlow) * 0.08; // Very subtle
+            fragColor.rgb += vec3(debugGlow);
+          }
+          
+          // Determine color based on reminder state
+          if (hasActiveReminders) {
+            // Blue shade for active reminders
+            fragColor = vec4(vec3(0.1, 0.3, 0.6) / abs(sin(iTime - uv.y - uv.x)), 1.0);
+          } else if (hasUpcomingReminders) {
+            // Green shade for upcoming reminders
+            fragColor = vec4(vec3(0.1, 0.5, 0.2) / abs(sin(iTime - uv.y - uv.x)), 1.0);
+          } else {
+            // Original neutral color
+            fragColor = vec4(vec3(0.1) / abs(sin(iTime - uv.y - uv.x)), 1.0);
+          }
+          
+          // Apply center dimming only if not disabled
+          if (!disableCenterDimming) {
+            fragColor.rgb = mix(fragColor.rgb * 0.3, fragColor.rgb, centerDim);
+          }
+        }
+
+        void main() {
+          vec2 fragCoord = vTextureCoord * iResolution;
+          
+          // Calculate distance from center for circular mask
+          vec2 center = iResolution * 0.5;
+          float dist = distance(fragCoord, center);
+          float radius = min(iResolution.x, iResolution.y) * 0.5;
+          
+          // Only render inside circle
+          if (dist < radius) {
+            vec4 color;
+            mainImage(color, fragCoord);
+            gl_FragColor = color;
+          } else {
+            discard;
+          }
+        }
+      `;
+      
+      console.log('Shader sources loaded');
+      
+      // Compile shaders
+      const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource(vertexShader, vertexShaderSource);
+      gl.compileShader(vertexShader);
+      
+      if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+        console.error('Vertex shader compilation error:', gl.getShaderInfoLog(vertexShader));
+        return;
+      }
+      console.log('Vertex shader compiled successfully');
+      
+      const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource(fragmentShader, fragmentShaderSource);
+      gl.compileShader(fragmentShader);
+      
+      if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+        console.error('Fragment shader compilation error:', gl.getShaderInfoLog(fragmentShader));
+        return;
+      }
+      console.log('Fragment shader compiled successfully');
+      
+      // Create program
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program linking error:', gl.getProgramInfoLog(program));
+        return;
+      }
+      console.log('Shader program linked successfully');
+      
+      gl.useProgram(program);
+      
+      // Get attribute and uniform locations
+      const aVertexPosition = gl.getAttribLocation(program, 'aVertexPosition');
+      const aTextureCoord = gl.getAttribLocation(program, 'aTextureCoord');
+      const iTime = gl.getUniformLocation(program, 'iTime');
+      const iResolution = gl.getUniformLocation(program, 'iResolution');
+      const iMouse = gl.getUniformLocation(program, 'iMouse');
+      const hasActiveReminders = gl.getUniformLocation(program, 'hasActiveReminders');
+      const hasUpcomingReminders = gl.getUniformLocation(program, 'hasUpcomingReminders');
+      const disableCenterDimming = gl.getUniformLocation(program, 'disableCenterDimming');
+      
+      console.log('Attribute/Uniform locations:', {
+        aVertexPosition: aVertexPosition,
+        aTextureCoord: aTextureCoord,
+        iTime: iTime,
+        iResolution: iResolution,
+        iMouse: iMouse,
+        hasActiveReminders: hasActiveReminders,
+        hasUpcomingReminders: hasUpcomingReminders,
+        disableCenterDimming: disableCenterDimming
+      });
+      
+      // Create buffer with texture coordinates
+      const buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1, -1, 0, 0,
+         1, -1, 1, 0,
+        -1,  1, 0, 1,
+        -1,  1, 0, 1,
+         1, -1, 1, 0,
+         1,  1, 1, 1
+      ]), gl.STATIC_DRAW);
+      
+      // Enable attributes
+      gl.enableVertexAttribArray(aVertexPosition);
+      gl.vertexAttribPointer(aVertexPosition, 2, gl.FLOAT, false, 16, 0);
+      
+      gl.enableVertexAttribArray(aTextureCoord);
+      gl.vertexAttribPointer(aTextureCoord, 2, gl.FLOAT, false, 16, 8);
+      
+      console.log('WebGL setup complete! Starting render loop...');
+      
+      // Animation loop
+      let startTime = Date.now();
+      function render() {
+        const time = (Date.now() - startTime) * 0.001;
+        
+        // Set uniforms
+        gl.uniform1f(iTime, time);
+        gl.uniform2f(iResolution, canvas.width, canvas.height);
+        
+        // Only pass mouse coordinates when mouse is in shader
+        if (isMouseInShader) {
+          gl.uniform2f(iMouse, mouseX * canvas.width, mouseY * canvas.height);
+        } else {
+          gl.uniform2f(iMouse, -1000, -1000); // Move mouse far outside shader
+        }
+        
+        gl.uniform1i(hasActiveReminders, false);
+        gl.uniform1i(hasUpcomingReminders, false);
+        gl.uniform1i(disableCenterDimming, true);
+        
+        // Debug: log mouse coordinates every 60 frames (about once per second)
+        if (Math.floor(time * 60) % 60 === 0) {
+          const mouseDistFromCenter = Math.sqrt(
+            Math.pow(mouseX * canvas.width - canvas.width/2, 2) + 
+            Math.pow(mouseY * canvas.height - canvas.height/2, 2)
+          );
+          console.log('Mouse coords:', mouseX * canvas.width, mouseY * canvas.height, 
+                     'Center:', canvas.width/2, canvas.height/2,
+                     'Distance from center:', mouseDistFromCenter,
+                     'Shader radius:', 191,
+                     'Inside shader:', mouseDistFromCenter < 191);
+        }
+        
+        // Draw
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 6);
+        
+        requestAnimationFrame(render);
+      }
+      
+      render();
+      console.log('Render loop started!');
+    }
+    
+    // Start the shader when the page loads
+    initShader();
+
+    // Comprehensive testing function for all responsiveness scenarios
+    function testResponsiveness() {
+      const container = document.querySelector('.shader-container');
+      const canvas = document.querySelector('#glcanvas');
+      const rect = container.getBoundingClientRect();
+      
+      console.log('=== RESPONSIVENESS TEST ===');
+      console.log('Container dimensions:', rect.width, 'x', rect.height);
+      console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+      console.log('Canvas CSS dimensions:', canvas.style.width, 'x', canvas.style.height);
+      console.log('Aspect ratio check:', rect.width / rect.height);
+      console.log('Is perfect circle:', Math.abs(rect.width - rect.height) < 1);
+      console.log('Viewport size:', window.innerWidth, 'x', window.innerHeight);
+      console.log('Device pixel ratio:', window.devicePixelRatio);
+      console.log('Orientation:', window.orientation || 'portrait');
+      console.log('Chrome tab size:', window.outerWidth, 'x', window.outerHeight);
+      console.log('================================');
+      
+      // Test if shader is rendering properly
+      if (gl) {
+        console.log('WebGL viewport:', gl.canvas.width, 'x', gl.canvas.height);
+        console.log('WebGL canvas size:', gl.canvas.width, 'x', gl.canvas.height);
+      }
+    }
+    
+    // Run tests on load and resize
+    testResponsiveness();
+    window.addEventListener('resize', () => {
+      setTimeout(testResponsiveness, 100);
+    });
+    
+    // Test on tab focus changes (Chrome specific)
+    window.addEventListener('focus', testResponsiveness);
+    window.addEventListener('blur', testResponsiveness);
+  </script>
+</body>
+</html>
