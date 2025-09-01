@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <title>Peoply.ai - AI Recruiter for Startups and Agencies </title>
   <link href="https://fonts.googleapis.com/css2?family=Italiana:wght@400&display=swap" rel="stylesheet">
   <style>
@@ -305,6 +306,11 @@
   <a href="https://cal.com/aniket-dutta-fkqncs/peoply.ai" target="_blank" class="cta-button">SIGN UP FOR BETA</a>
 
   <script>
+    // Force HTTPS redirect
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      location.replace(`https:${location.href.substring(location.protocol.length)}`);
+    }
+    
     // Mouse tracking for shader interaction - ONLY within shader container
     let mouseX = 0.5;
     let mouseY = 0.5;
